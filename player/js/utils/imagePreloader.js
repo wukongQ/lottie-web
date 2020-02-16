@@ -12,6 +12,7 @@ var ImagePreloader = (function(){
 
     function imageLoaded(){
         this.loadedAssets += 1;
+        console.log('loaded:', this.loadedAssets)
         if(this.loadedAssets === this.totalImages){
             if(this.imagesLoadedCb) {
                 this.imagesLoadedCb(null);
@@ -22,9 +23,9 @@ var ImagePreloader = (function(){
     function getAssetsPath(assetData, assetsPath, original_path) {
         var path = '';
         if (assetData.e) {
-            path = assetData.p;
+            path = assetData.p || assetData.v;
         } else if(assetsPath) {
-            var imagePath = assetData.p;
+            var imagePath = assetData.p || assetData.v;
             if (imagePath.indexOf('images/') !== -1) {
                 imagePath = imagePath.split('/')[1];
             }
@@ -32,20 +33,36 @@ var ImagePreloader = (function(){
         } else {
             path = original_path;
             path += assetData.u ? assetData.u : '';
-            path += assetData.p;
+            path += assetData.p || assetData.v;
         }
         return path;
     }
 
     function createImageData(assetData) {
         var path = getAssetsPath(assetData, this.assetsPath, this.path);
-        var img = createTag('img');
-        img.crossOrigin = 'anonymous';
-        img.addEventListener('load', this._imageLoaded.bind(this), false);
-        img.addEventListener('error', function() {
-            ob.img = proxyImage;
-            this._imageLoaded();
-        }.bind(this), false);
+        var mediaType = assetData.v ? 'video' : 'image'
+        var img = null
+        console.log('mediaType:', mediaType)
+        if (mediaType === 'image') {
+            img = createTag('img');
+            img.crossOrigin = 'anonymous';
+            img.addEventListener('load', this._imageLoaded.bind(this), false);
+            img.addEventListener('error', function() {
+                ob.img = proxyImage;
+                this._imageLoaded();
+            }.bind(this), false);
+        } else if (mediaType === 'video') {
+            var video = createTag('video')
+            video.crossOrigin = 'anonymous';
+            video.preload = 'auto'
+            video.muted = true
+            video.addEventListener('canplay', this._imageLoaded.bind(this), false);
+            video.addEventListener('error', function() {
+                ob.img = null;
+                this._imageLoaded();
+            })
+            img = video
+        }
         img.src = path;
         var ob = {
             img: img,

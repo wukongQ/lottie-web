@@ -26,6 +26,11 @@
       "title": "Image path",
       "description": "Image path",
       "type": "string"
+    },
+    "v": {
+      "title": "Video name",
+      "description": "'p' or 'v' is only one can exist",
+      "type": "string"
     }
   }
 }

@@ -500,9 +500,9 @@ AnimationItem.prototype.getPath = function () {
 AnimationItem.prototype.getAssetsPath = function (assetData) {
     var path = '';
     if(assetData.e) {
-        path = assetData.p;
+        path = assetData.p || assetData.v;
     } else if(this.assetsPath){
-        var imagePath = assetData.p;
+        var imagePath = assetData.p || assetData.v;
         if(imagePath.indexOf('images/') !== -1){
             imagePath = imagePath.split('/')[1];
         }
@@ -510,7 +510,7 @@ AnimationItem.prototype.getAssetsPath = function (assetData) {
     } else {
         path = this.path;
         path += assetData.u ? assetData.u : '';
-        path += assetData.p;
+        path += assetData.p || assetData.v;
     }
     return path;
 };

@@ -385,6 +385,10 @@ const scripts = [
 		builds: ['full','canvas','canvas_light']
 	},
 	{
+		src: 'js/elements/canvasElements/CVVideoElement.js',
+		builds: ['full','canvas','canvas_light']
+	},
+	{
 		src: 'js/elements/canvasElements/CVCompElement.js',
 		builds: ['full','canvas','canvas_light','canvas_worker']
 	},
@@ -631,6 +635,9 @@ function uglifyCode(code) {
 					toplevel:true,
 					mangle: {
 						reserved: ['lottie']
+					},
+					compress: {
+						drop_console: false
 					}
 				});
 			if (result.error) {

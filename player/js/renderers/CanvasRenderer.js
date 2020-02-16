@@ -38,7 +38,9 @@ CanvasRenderer.prototype.createText = function (data) {
 };
 
 CanvasRenderer.prototype.createImage = function (data) {
-    return new CVImageElement(data, this.globalData, this);
+    var assetData = this.globalData.getAssetData(data.refId);
+    var CVMediaElement = assetData.v ? CVVideoElement : CVImageElement
+    return new CVMediaElement(data, this.globalData, this);
 };
 
 CanvasRenderer.prototype.createComp = function (data) {
