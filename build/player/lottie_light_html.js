@@ -5975,7 +5975,13 @@ function SVGRenderer(animationItem, config){
         viewBoxSize: (config && config.viewBoxSize) || false,
         className: (config && config.className) || '',
         id: (config && config.id) || '',
-        focusable: config && config.focusable
+        focusable: config && config.focusable,
+        filterSize: {
+            width: config && config.filterSize && config.filterSize.width || '100%',
+            height: config && config.filterSize && config.filterSize.height || '100%',
+            x: config && config.filterSize && config.filterSize.x || '0%',
+            y: config && config.filterSize && config.filterSize.y || '0%',
+        }
     };
 
     this.globalData = {
@@ -6200,7 +6206,13 @@ function HybridRenderer(animationItem, config){
     this.renderConfig = {
         className: (config && config.className) || '',
         imagePreserveAspectRatio: (config && config.imagePreserveAspectRatio) || 'xMidYMid slice',
-        hideOnTransparent: (config && config.hideOnTransparent === false) ? false : true
+        hideOnTransparent: (config && config.hideOnTransparent === false) ? false : true,
+        filterSize: {
+            width: config && config.filterSize && config.filterSize.width || '400%',
+            height: config && config.filterSize && config.filterSize.height || '400%',
+            x: config && config.filterSize && config.filterSize.x || '-100%',
+            y: config && config.filterSize && config.filterSize.y || '-100%',
+        }
     };
     this.globalData = {
         _mdf: false,
@@ -8871,11 +8883,12 @@ SVGProLevelsFilter.prototype.renderFrame = function(forceRender){
         
     }
 };
-function SVGDropShadowEffect(filter, filterManager){
-    filter.setAttribute('x','-100%');
-    filter.setAttribute('y','-100%');
-    filter.setAttribute('width','400%');
-    filter.setAttribute('height','400%');
+function SVGDropShadowEffect(filter, filterManager) {
+    var filterSize = filterManager.container.globalData.renderConfig.filterSize
+    filter.setAttribute('x', filterSize.x);
+    filter.setAttribute('y', filterSize.y);
+    filter.setAttribute('width', filterSize.width);
+    filter.setAttribute('height', filterSize.height);
     this.filterManager = filterManager;
 
     var feGaussianBlur = createNS('feGaussianBlur');
@@ -10099,6 +10112,7 @@ var AnimationItem = function () {
     this.isLoaded = false;
     this.currentFrame = 0;
     this.currentRawFrame = 0;
+    this.firstFrame = 0;
     this.totalFrames = 0;
     this.frameRate = 0;
     this.frameMult = 0;
@@ -10175,6 +10189,8 @@ AnimationItem.prototype.setParams = function(params) {
             this.trigger('data_failed');
         }.bind(this));
     }
+
+    this.initialSegment = params.initialSegment;
 };
 
 AnimationItem.prototype.setData = function (wrapper, animationData) {
@@ -10287,7 +10303,14 @@ AnimationItem.prototype.configAnimation = function (animData) {
     }
     try {
         this.animationData = animData;
-        this.totalFrames = Math.floor(this.animationData.op - this.animationData.ip);
+
+        if (this.initialSegment) {
+            this.totalFrames = Math.floor(this.initialSegment[1] - this.initialSegment[0]);
+            this.firstFrame = Math.round(this.initialSegment[0]);
+        } else {
+            this.totalFrames = Math.floor(this.animationData.op - this.animationData.ip);
+            this.firstFrame = Math.round(this.animationData.ip);
+        }
         this.renderer.configAnimation(animData);
         if(!animData.assets){
             animData.assets = [];
@@ -10295,7 +10318,6 @@ AnimationItem.prototype.configAnimation = function (animData) {
 
         this.assets = this.animationData.assets;
         this.frameRate = this.animationData.fr;
-        this.firstFrame = Math.round(this.animationData.ip);
         this.frameMult = this.animationData.fr / 1000;
         this.renderer.searchExtraCompositions(animData.assets);
         this.trigger('config_ready');
@@ -10784,7 +10806,7 @@ lottie.freeze = animationManager.freeze;
 lottie.unfreeze = animationManager.unfreeze;
 lottie.getRegisteredAnimations = animationManager.getRegisteredAnimations;
 lottie.__getFactory = getFactory;
-lottie.version = '5.6.3';
+lottie.version = '5.6.6';
 
 function checkReady() {
     if (document.readyState === "complete") {
